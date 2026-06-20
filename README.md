@@ -38,3 +38,8 @@ Ouvrir simplement `index.html` dans un navigateur.
 ## Notes de conception
 
 Le prototype utilise une navigation simple avec trois sections : Play, Learn et Design. Le jeu applique les principes de Gestalt comme la similarité, la proximité, la figure-fond et la continuité. Le mode difficile ajoute du mouvement circulaire pour augmenter l'attention visuelle et la charge cognitive.
+
+
+## Mise à jour - animation de chargement
+
+Lorsqu'un utilisateur change de page avec la navigation Play / Learn / Design, une animation de chargement apparaît. Elle montre un cerveau qui s'illumine avec des points neuronaux pour renforcer le thème cognitif du jeu.
