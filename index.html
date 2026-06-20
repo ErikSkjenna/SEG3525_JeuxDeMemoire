@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuroTile Sequencer | Jeu de mémoire</title>
+  <meta name="description" content="Prototype haute fidélité d'un jeu de mémoire basé sur des séquences de tuiles." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app" v-cloak>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <div class="noise"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#" @click.prevent="setPage('play')" aria-label="Retour au jeu">
+        <span class="brand-mark">N</span>
+        <span>
+          <strong>NeuroTile</strong>
+          <small>Sequencer</small>
+        </span>
+      </a>
+
+      <nav class="main-nav" aria-label="Navigation principale">
+        <button :class="{ active: page === 'play' }" @click="setPage('play')">Play</button>
+        <button :class="{ active: page === 'learn' }" @click="setPage('learn')">Learn</button>
+        <button :class="{ active: page === 'design' }" @click="setPage('design')">Design</button>
+      </nav>
+    </header>
+
+    <main>
+      <section v-if="page === 'play'" class="hero-section">
+        <div class="hero-copy">
+          <p class="eyebrow">Jeu de mémoire · attention visuelle · séquences</p>
+          <h1>Mémorise la séquence. Rejoue les tuiles. Bats ton score.</h1>
+          <p class="hero-text">
+            Observe les tuiles qui s'allument, retiens l'ordre exact, puis reproduis la séquence.
+            Le mode difficile ajoute des tuiles qui tournent en cercle pour augmenter la charge cognitive.
+          </p>
+
+          <div class="hero-actions">
+            <button class="btn btn-primary" @click="startGame">{{ gameStarted ? 'Nouvelle partie' : 'Commencer' }}</button>
+            <button class="btn btn-secondary" @click="setPage('learn')">Voir le concept</button>
+          </div>
+        </div>
+
+        <aside class="score-panel" aria-label="Statistiques du joueur">
+          <div>
+            <span class="stat-label">Mode</span>
+            <strong>{{ selectedMode.name }}</strong>
+          </div>
+          <div>
+            <span class="stat-label">Niveau</span>
+            <strong>{{ level }}</strong>
+          </div>
+          <div>
+            <span class="stat-label">Score</span>
+            <strong>{{ score }}</strong>
+          </div>
+          <div>
+            <span class="stat-label">Meilleur</span>
+            <strong>{{ bestScoreForMode }}</strong>
+          </div>
+        </aside>
+      </section>
+
+      <section v-if="page === 'play'" id="game-area" class="layout-grid">
+        <aside class="config-card panel">
+          <div class="section-heading compact">
+            <p class="eyebrow">Configuration</p>
+            <h2>Choisir un niveau</h2>
+            <p>Deux scénarios de jeu : simple pour Amélie, dynamique pour Gabriel.</p>
+          </div>
+
+          <div class="mode-list">
+            <button
+              v-for="mode in modes"
+              :key="mode.id"
+              class="mode-card"
+              :class="{ selected: selectedModeId === mode.id }"
+              @click="changeMode(mode.id)"
+            >
+              <span class="mode-icon">{{ mode.icon }}</span>
+              <span>
+                <strong>{{ mode.name }}</strong>
+                <small>{{ mode.description }}</small>
+              </span>
+            </button>
+          </div>
+
+          <div class="tip-box">
+            <strong>But cognitif</strong>
+            <p>{{ selectedMode.learningGoal }}</p>
+          </div>
+        </aside>
+
+        <section class="game-card panel" aria-live="polite">
+          <div class="game-head">
+            <div>
+              <p class="eyebrow">Zone de jeu</p>
+              <h2>{{ selectedMode.title }}</h2>
+            </div>
+            <span class="phase-pill" :class="phase">{{ phaseLabel }}</span>
+          </div>
+
+          <div class="instruction-box" :class="phase">
+            <strong>{{ currentInstruction.title }}</strong>
+            <p>{{ currentInstruction.text }}</p>
+          </div>
+
+          <div class="board-wrap" :class="{ hard: selectedModeId === 'hard' }">
+            <div class="board-glow"></div>
+
+            <div v-if="selectedModeId === 'easy'" class="tile-grid" role="group" aria-label="Tuiles statiques">
+              <button
+                v-for="tile in tiles"
+                :key="tile.id"
+                class="memory-tile"
+                :class="['tile-' + tile.id, { active: activeTile === tile.id, correct: correctPulse === tile.id, wrong: wrongPulse === tile.id }]"
+                :disabled="!canPressTiles"
+                @click="pressTile(tile.id)"
+                :aria-label="'Tuile ' + tile.label"
+              >
+                <span>{{ tile.label }}</span>
+                <small>{{ tile.keyword }}</small>
+              </button>
+            </div>
+
+            <div v-else class="orbit-board" role="group" aria-label="Tuiles mobiles">
+              <div class="orbit-ring ring-one"></div>
+              <div class="orbit-ring ring-two"></div>
+              <div class="center-core">
+                <span>{{ sequence.length }}</span>
+                <small>longueur</small>
+              </div>
+
+              <button
+                v-for="tile in tiles"
+                :key="tile.id"
+                class="memory-tile orbit-tile"
+                :class="['tile-' + tile.id, { active: activeTile === tile.id, correct: correctPulse === tile.id, wrong: wrongPulse === tile.id }]"
+                :style="orbitStyle(tile.id)"
+                :disabled="!canPressTiles"
+                @click="pressTile(tile.id)"
+                :aria-label="'Tuile mobile ' + tile.label"
+              >
+                <span>{{ tile.label }}</span>
+                <small>{{ tile.keyword }}</small>
+              </button>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="btn btn-primary" @click="startGame">{{ gameStarted ? 'Recommencer' : 'Démarrer' }}</button>
+            <button class="btn btn-secondary" @click="replaySequence" :disabled="!canReplay">Rejouer la séquence</button>
+          </div>
+
+          <div class="sequence-meter" aria-label="Progression de la réponse">
+            <span
+              v-for="(_, index) in sequence"
+              :key="index"
+              :class="{ done: index < playerIndex, current: index === playerIndex && phase === 'input' }"
+            ></span>
+          </div>
+        </section>
+      </section>
+
+      <section v-if="page === 'learn'" class="content-page">
+        <div class="section-heading">
+          <p class="eyebrow">Dimension éducative</p>
+          <h1>Pourquoi ce jeu teste la mémoire?</h1>
+          <p>
+            NeuroTile Sequencer utilise une séquence visuelle courte que le joueur doit retenir.
+            Le défi augmente quand la séquence devient plus longue ou quand les tuiles commencent à bouger.
+          </p>
+        </div>
+
+        <div class="info-grid">
+          <article class="info-card">
+            <span class="info-icon">🧠</span>
+            <h2>Mémoire de travail</h2>
+            <p>
+              Le joueur garde temporairement l'ordre des tuiles en tête. Chaque nouvelle ronde ajoute un élément,
+              ce qui rend la tâche plus difficile.
+            </p>
+          </article>
+          <article class="info-card">
+            <span class="info-icon">👁️</span>
+            <h2>Attention visuelle</h2>
+            <p>
+              Les tuiles illuminées attirent l'attention. En mode difficile, le mouvement oblige le joueur à suivre
+              l'emplacement des tuiles pendant la réponse.
+            </p>
+          </article>
+          <article class="info-card">
+            <span class="info-icon">⚡</span>
+            <h2>Charge cognitive</h2>
+            <p>
+              Le mode facile réduit les distractions. Le mode difficile ajoute du mouvement, donc le cerveau doit gérer
+              la séquence et la position des tuiles en même temps.
+            </p>
+          </article>
+          <article class="info-card">
+            <span class="info-icon">🎯</span>
+            <h2>Stratégies</h2>
+            <p>
+              Pour réussir, le joueur peut transformer la séquence en rythme, en histoire courte ou en groupes de deux.
+              C'est une stratégie de mémorisation appelée regroupement.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section v-if="page === 'design'" class="content-page">
+        <div class="section-heading">
+          <p class="eyebrow">Choix de conception</p>
+          <h1>Prototype haute fidélité basé sur le rapport</h1>
+          <p>
+            Cette interface reprend les idées du rapport : un mode accessible pour Amélie, un mode plus stimulant pour Gabriel,
+            une esthétique sombre avec accents lumineux, et une application claire des principes de Gestalt.
+          </p>
+        </div>
+
+        <div class="design-columns">
+          <article class="panel design-panel">
+            <h2>Patrons utilisés</h2>
+            <ul class="styled-list">
+              <li><strong>Organisation :</strong> sections Play, Learn et Design.</li>
+              <li><strong>Entrée :</strong> sélection du niveau, boutons de contrôle et tuiles cliquables.</li>
+              <li><strong>Navigation :</strong> menu simple et constant en haut de page.</li>
+              <li><strong>Rétroaction :</strong> messages, animation de tuiles, progression et score.</li>
+            </ul>
+          </article>
+
+          <article class="panel design-panel">
+            <h2>Principes de Gestalt</h2>
+            <ul class="styled-list">
+              <li><strong>Similarité :</strong> les tuiles ont une forme commune.</li>
+              <li><strong>Proximité :</strong> les tuiles sont regroupées dans la zone de jeu.</li>
+              <li><strong>Figure-fond :</strong> les couleurs lumineuses ressortent sur le fond sombre.</li>
+              <li><strong>Continuité :</strong> les tuiles mobiles suivent un cercle prévisible.</li>
+              <li><strong>Hiérarchie :</strong> le jeu, le score et les actions principales sont visuellement prioritaires.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>NeuroTile Sequencer · SEG3525 Devoir 3 · Prototype HTML/CSS/JavaScript avec Vue 3</p>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
