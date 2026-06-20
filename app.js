@@ -9,6 +9,8 @@ createApp({
   data() {
     return {
       page: "play",
+      pageLoading: false,
+      loadingMessage: "Le cerveau prépare la prochaine page...",
       selectedModeId: "easy",
       phase: "idle",
       level: 0,
@@ -107,8 +109,26 @@ createApp({
   },
 
   methods: {
-    setPage(pageName) {
+    async setPage(pageName) {
+      if (pageName === this.page || this.pageLoading) return;
+
+      const pageMessages = {
+        play: "Réactivation de la zone de jeu...",
+        learn: "Les neurones chargent les concepts cognitifs...",
+        design: "Chargement des choix de conception...",
+      };
+
+      this.loadingMessage = pageMessages[pageName] || "Le cerveau prépare la prochaine page...";
+      this.pageLoading = true;
+
+      await this.wait(720);
       this.page = pageName;
+
+      await this.$nextTick();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      await this.wait(260);
+      this.pageLoading = false;
     },
 
     changeMode(modeId) {
