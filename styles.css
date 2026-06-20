@@ -104,6 +104,127 @@ button:disabled {
   mask-image: linear-gradient(to bottom, black, transparent 88%);
 }
 
+
+
+/* Animation de chargement lors des changements de page */
+.page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at center, rgba(94, 231, 255, 0.18), transparent 26rem),
+    rgba(4, 7, 16, 0.76);
+  backdrop-filter: blur(16px);
+  transition: opacity 240ms ease, visibility 240ms ease;
+}
+
+.page-loader.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+}
+
+.brain-loader {
+  width: min(380px, 92vw);
+  min-height: 330px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 34px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05)),
+    rgba(17, 24, 43, 0.88);
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.55),
+    0 0 70px rgba(94, 231, 255, 0.18);
+  transform: scale(0.96) translateY(10px);
+  transition: transform 240ms ease;
+}
+
+.page-loader.visible .brain-loader {
+  transform: scale(1) translateY(0);
+}
+
+.brain-orb {
+  position: relative;
+  width: 156px;
+  height: 156px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.20), transparent 58%),
+    linear-gradient(135deg, rgba(94, 231, 255, 0.22), rgba(255, 95, 215, 0.18));
+  box-shadow:
+    inset 0 0 34px rgba(255, 255, 255, 0.12),
+    0 0 50px rgba(94, 231, 255, 0.28);
+  animation: orbPulse 1.5s ease-in-out infinite;
+}
+
+.brain-orb::before,
+.brain-orb::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(94, 231, 255, 0.34);
+  animation: neuralRing 1.7s ease-out infinite;
+}
+
+.brain-orb::after {
+  inset: -8px;
+  border-color: rgba(255, 95, 215, 0.30);
+  animation-delay: 0.45s;
+}
+
+.brain-icon {
+  position: relative;
+  z-index: 2;
+  font-size: 4.65rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 18px rgba(94, 231, 255, 0.75));
+  animation: brainFlash 1.05s ease-in-out infinite;
+}
+
+.synapse {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 18px var(--cyan), 0 0 34px rgba(94, 231, 255, 0.55);
+  animation: synapseBlink 1.18s ease-in-out infinite;
+}
+
+.synapse-one { top: 14px; left: 50%; animation-delay: 0s; }
+.synapse-two { top: 42px; right: 18px; background: var(--green); box-shadow: 0 0 18px var(--green), 0 0 34px rgba(122, 255, 191, 0.55); animation-delay: 0.15s; }
+.synapse-three { right: 20px; bottom: 34px; background: var(--pink); box-shadow: 0 0 18px var(--pink), 0 0 34px rgba(255, 95, 215, 0.55); animation-delay: 0.3s; }
+.synapse-four { bottom: 16px; left: 48%; background: var(--yellow); box-shadow: 0 0 18px var(--yellow), 0 0 34px rgba(255, 209, 102, 0.55); animation-delay: 0.45s; }
+.synapse-five { bottom: 42px; left: 20px; background: var(--violet); box-shadow: 0 0 18px var(--violet), 0 0 34px rgba(182, 108, 255, 0.55); animation-delay: 0.6s; }
+.synapse-six { top: 42px; left: 18px; background: var(--blue); box-shadow: 0 0 18px var(--blue), 0 0 34px rgba(123, 140, 255, 0.55); animation-delay: 0.75s; }
+
+.brain-loader strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 1.3rem;
+  letter-spacing: -0.03em;
+}
+
+.brain-loader p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
 .topbar {
   position: sticky;
   top: 0;
@@ -741,6 +862,29 @@ h2 {
   to { transform: translate(-3rem, -3rem) scale(1.12); }
 }
 
+
+
+@keyframes brainFlash {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 14px rgba(94, 231, 255, 0.55)); }
+  45% { transform: scale(1.12) rotate(-2deg); filter: drop-shadow(0 0 28px rgba(122, 255, 191, 0.85)); }
+  70% { transform: scale(1.04) rotate(2deg); filter: drop-shadow(0 0 24px rgba(255, 95, 215, 0.75)); }
+}
+
+@keyframes synapseBlink {
+  0%, 100% { transform: scale(0.7); opacity: 0.35; }
+  45% { transform: scale(1.28); opacity: 1; }
+}
+
+@keyframes neuralRing {
+  0% { transform: scale(0.7); opacity: 0.85; }
+  100% { transform: scale(1.38); opacity: 0; }
+}
+
+@keyframes orbPulse {
+  0%, 100% { box-shadow: inset 0 0 34px rgba(255, 255, 255, 0.12), 0 0 42px rgba(94, 231, 255, 0.22); }
+  50% { box-shadow: inset 0 0 44px rgba(255, 255, 255, 0.18), 0 0 72px rgba(94, 231, 255, 0.40); }
+}
+
 @media (max-width: 920px) {
   .hero-section,
   .layout-grid,
@@ -793,6 +937,11 @@ h2 {
     margin-left: -56px;
     margin-top: -56px;
   }
+
+  .board-wrap.hard {
+    min-height: 420px;
+  }
+}
 
   .board-wrap.hard {
     min-height: 420px;
