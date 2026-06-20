@@ -13,6 +13,22 @@
     <div class="ambient ambient-two"></div>
     <div class="noise"></div>
 
+    <div class="page-loader" :class="{ visible: pageLoading }" aria-live="polite" aria-busy="true">
+      <div class="brain-loader" role="status">
+        <div class="brain-orb">
+          <span class="brain-icon" aria-hidden="true">🧠</span>
+          <span class="synapse synapse-one"></span>
+          <span class="synapse synapse-two"></span>
+          <span class="synapse synapse-three"></span>
+          <span class="synapse synapse-four"></span>
+          <span class="synapse synapse-five"></span>
+          <span class="synapse synapse-six"></span>
+        </div>
+        <strong>Connexion neuronale</strong>
+        <p>{{ loadingMessage }}</p>
+      </div>
+    </div>
+
     <header class="topbar">
       <a class="brand" href="#" @click.prevent="setPage('play')" aria-label="Retour au jeu">
         <span class="brand-mark">N</span>
@@ -255,4 +271,6 @@
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="app.js"></script>
 </body>
+</html>
+
 </html>
