@@ -5,6 +5,7 @@ Prototype haute fidélité pour SEG3525 - Devoir 3.
 ## Description
 
 NeuroTile Sequencer est un jeu de mémoire basé sur des séquences de tuiles. Le joueur observe une séquence lumineuse, puis doit la reproduire dans le bon ordre.
+Lien : https://neurotile.netlify.app/
 
 ## Modes
 
